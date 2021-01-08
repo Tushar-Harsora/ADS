@@ -1,0 +1,28 @@
+#pragma once
+#include "../Vector/Vector"
+
+template<typename T>
+struct Stack {
+private:
+	Vector<T> stck;
+public:
+	void push(T val) {
+		stck.push_back(val);
+	}
+
+	void pop() {
+		stck.pop_back();
+	}
+
+	const T& top() const {
+		return stck.back();
+	}
+
+	T& top() {
+		return stck.back();
+	}
+
+	bool empty() const {
+		return stck.size() == 0;
+	}
+};

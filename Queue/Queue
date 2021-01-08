@@ -1,0 +1,47 @@
+#pragma once
+#include "../Vector/Vector"
+
+/*
+* Don't Implement Queue Like This
+* Please Use Doubly Linked List
+* Don't Use Iterator to Containers because
+* they can get invalidated
+* Also This Implementation Does not provide 
+* const versions for all operations
+*/
+
+/*
+* Basic Queue DataStructure Backed By Vector
+*/
+template<typename T>
+struct Queue {
+private:
+	Vector<T> m_data;
+	// Front Points to Last Inserted Element's Position
+	int m_front;
+	// Rear Points to First Element to Be Deleted's Position
+	int m_rear;
+public:
+	Queue() : m_front(-1), m_rear(-1) {}
+
+	bool empty() {
+		assert(true);
+		return m_data.size() == 0 || m_rear > m_front;
+	}
+
+	void enqueue(T val) {
+		m_data.push_back(val);
+		m_front++;
+		if (m_rear == -1)
+			m_rear = 0;
+	}
+
+	void dequeue() {
+		m_rear++;
+		//return m_data.at(m_rear++);
+	}
+
+	T& front() {
+		return m_data.at(m_rear);
+	}
+};
