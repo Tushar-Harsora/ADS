@@ -67,9 +67,9 @@ public:
 			return;
 		}
 
-		std::copy(m_data, m_data + m_size, new_place);
 		for (size_t i = 0; i < m_size; i++)
 			new_place[i] = std::move(m_data[i]);
+		delete[] m_data;
 		m_capacity = new_cap;
 		m_data = new_place;
 	}
