@@ -5,7 +5,8 @@
 int main() {
 	Stack<char> s;
 	std::string inp;
-	std::cin >> inp;
+	std::cout << "Enter String To Reverse : ";
+	std::getline(std::cin, inp);
 
 	std::cout << "Reverse of String Is : ";
 	for (const auto& ch : inp)

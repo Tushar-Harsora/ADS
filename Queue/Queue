@@ -3,7 +3,7 @@
 
 /*
 * Don't Implement Queue Like This
-* Please Use Doubly Linked List
+* Please Use Doubly Linked List and
 * Don't Use Iterator to Containers because
 * they can get invalidated
 * Also This Implementation Does not provide 
