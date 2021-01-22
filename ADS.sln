@@ -9,6 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Vector", "Vector\Vector.vcx
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Queue", "Queue\Queue.vcxproj", "{AC4B33C0-E2CF-4E53-A9AA-589AA614F080}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AVL Tree", "AVL Tree\AVL Tree.vcxproj", "{6AFD4CB8-0BB7-46C4-95F2-493FF0C44984}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -41,6 +43,14 @@ Global
 		{AC4B33C0-E2CF-4E53-A9AA-589AA614F080}.Release|x64.Build.0 = Release|x64
 		{AC4B33C0-E2CF-4E53-A9AA-589AA614F080}.Release|x86.ActiveCfg = Release|Win32
 		{AC4B33C0-E2CF-4E53-A9AA-589AA614F080}.Release|x86.Build.0 = Release|Win32
+		{6AFD4CB8-0BB7-46C4-95F2-493FF0C44984}.Debug|x64.ActiveCfg = Debug|x64
+		{6AFD4CB8-0BB7-46C4-95F2-493FF0C44984}.Debug|x64.Build.0 = Debug|x64
+		{6AFD4CB8-0BB7-46C4-95F2-493FF0C44984}.Debug|x86.ActiveCfg = Debug|Win32
+		{6AFD4CB8-0BB7-46C4-95F2-493FF0C44984}.Debug|x86.Build.0 = Debug|Win32
+		{6AFD4CB8-0BB7-46C4-95F2-493FF0C44984}.Release|x64.ActiveCfg = Release|x64
+		{6AFD4CB8-0BB7-46C4-95F2-493FF0C44984}.Release|x64.Build.0 = Release|x64
+		{6AFD4CB8-0BB7-46C4-95F2-493FF0C44984}.Release|x86.ActiveCfg = Release|Win32
+		{6AFD4CB8-0BB7-46C4-95F2-493FF0C44984}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
