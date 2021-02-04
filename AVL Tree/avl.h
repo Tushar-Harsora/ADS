@@ -10,7 +10,7 @@ struct Node {
 public:
 	Node() = default;
 	Node(Key key, Value value, int64_t height) : key(key), value(value), height(height),
-												left(nullptr), right(nullptr) { }
+		left(nullptr), right(nullptr) { }
 
 	Key key;
 	Value value;
@@ -24,10 +24,16 @@ public:
 		// Or Instead You Can Prematurely Check if left or right child exists
 		// if yes then call operator<< recursively
 		out << node->left;
-		out << node->value;
+		out << node->key << " : " << node->value;
 		out << node->right;
 
 		return out;
+	}
+
+	friend void swap(Node<Key, Value>& lhs, Node<Key, Value>& rhs) {
+		using std::swap;
+		swap(lhs.key, rhs.key);
+		swap(lhs.value, rhs.value);
 	}
 };
 
@@ -43,13 +49,13 @@ private:
 
 	Node<Key, Value>* _right_rotate(Node<Key, Value>* x) {
 		/*
-		                 x                                   y
+						 x                                   y
 						/ \                                 / \
-		               y   xr         ==>                  /   \
-		              / \                                 z     x
+					   y   xr         ==>                  /   \
+					  / \                                 z     x
 					 z   yr                              / \   / \
-		            / \                                 zl zr yr xr
-		           zl  zr
+					/ \                                 zl zr yr xr
+				   zl  zr
 		*/
 		auto y = x->left;
 		auto yr = x->left->right;
@@ -58,7 +64,7 @@ private:
 		x->left = yr;
 
 		x->height = 1 + std::max(getHeight(x->left), getHeight(x->right));
-	
+
 		y->height = 1 + std::max(getHeight(y->left), getHeight(y->right));
 
 		return y;
@@ -69,10 +75,10 @@ private:
 						 x                                    y
 						/ \                                  / \
 					  xl   y          ==>                   /   \
-					      / \                              x     z
-					     yl  z                            / \   / \
-		                    / \                          xl yl zl zr
-		            	   zl  zr
+						  / \                              x     z
+						 yl  z                            / \   / \
+							/ \                          xl yl zl zr
+						   zl  zr
 		*/
 		auto y = x->right;
 		auto yl = x->right->left;
@@ -132,6 +138,73 @@ private:
 		return root;
 	}
 
+	Node<Key, Value>* _delete(Node<Key, Value>* root, const Key& key) {
+		if (root == nullptr)
+			return root;
+
+		if (key < root->key) {
+			root->left = _delete(root->left, key);
+		}
+		else if (key > root->key) {
+			root->right = _delete(root->right, key);
+		}
+		else {		// Delete This
+			auto exactly_one_child = (root->left == nullptr || root->right == nullptr) && 
+									 !(root->left == nullptr && root->right == nullptr);	// A exor B
+
+			if (exactly_one_child) {
+				auto child_node = root->left ? root->left : root->right;
+				delete root;
+				return child_node;
+			}
+			else if (root->left == nullptr && root->right == nullptr) {
+				delete root;
+				return nullptr;
+			}
+			else {
+				Node<Key, Value>* inorder_successor = root->right;
+				while (inorder_successor->left)
+					inorder_successor = inorder_successor->left;
+
+				swap(*inorder_successor, *root);
+
+				delete inorder_successor;
+			}
+		}
+
+		auto leftHeight = getHeight(root->left);
+		auto rightHeight = getHeight(root->right);
+		root->height = max(leftHeight, rightHeight) + 1;
+
+		auto balance = get_balance(root);
+
+		if (balance > 1) {
+			auto left_balance = get_balance(root->left);
+			if (left_balance >= 0) {
+				return _right_rotate(root);
+			}else{
+				root->left = _left_rotate(root->left);
+				return _right_rotate(root);
+			}
+		}
+		else if (balance < -1) {
+			auto right_balance = get_balance(root->right);
+			if (right_balance <= 0) {
+				return _left_rotate(root);
+			}
+			else {
+				root->right = _right_rotate(root->right);
+				return _left_rotate(root);
+			}
+		}
+
+		return root;
+	}
+
+	auto get_balance(Node<Key, Value>* root) {
+		return getHeight(root->left) - getHeight(root->right);
+	}
+
 public:
 	AVL() : root(nullptr) { }
 
@@ -140,7 +213,11 @@ public:
 		root = _insert(root, node);
 	}
 
-	friend ostream& operator<<(ostream & out, const AVL<Key, Value>& avl) {
+	void erase(const Key& key) {
+		root = _delete(root, key);
+	}
+
+	friend ostream& operator<<(ostream& out, const AVL<Key, Value>& avl) {
 		out << avl.root;
 		return out;
 	}

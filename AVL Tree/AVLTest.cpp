@@ -9,5 +9,10 @@ int main() {
 	}
 
 	std::cout << avl << "\n";
+
+	for (int i = 0; i < 15; i++) {
+		avl.erase(i);
+		cout << "After Removing : " << i << " :: " << avl << endl;
+	}
 	return 0;
 }
