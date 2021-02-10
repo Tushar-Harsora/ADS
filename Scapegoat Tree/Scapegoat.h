@@ -102,6 +102,10 @@ private:
 		if (!finding_scapegoat)
 			return root;
 
+		// TODO: Can Further Optimize calls to size using formula
+		// size(parent) = size(inserted_subtree) + size(not_inserted_subtree) + 1
+		// This would require large restructuring of code.
+		// Result Is From Lemma 4.5 From "Scapegoat Trees" Igal Galperin, Ronald L. Rivest
 		size_t my_size = root->size();
 		bool i_am_scapegoat = my_size < ceill((inserted_left ? root->left->size() : root->right->size())* factor);
 		if (!i_am_scapegoat)
