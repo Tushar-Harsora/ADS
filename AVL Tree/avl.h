@@ -163,10 +163,18 @@ private:
 			}
 			else {
 				Node<Key, Value>* inorder_successor = root->right;
-				while (inorder_successor->left)
+				Node<Key, Value>* inorder_successor_parent = root;
+				while (inorder_successor->left) {
+					inorder_successor_parent = inorder_successor;
 					inorder_successor = inorder_successor->left;
+				}
 
 				swap(*inorder_successor, *root);
+
+				if (inorder_successor_parent->right == inorder_successor)
+					inorder_successor_parent->right = nullptr;
+				else
+					inorder_successor_parent->left = nullptr;
 
 				delete inorder_successor;
 			}
