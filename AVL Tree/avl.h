@@ -217,6 +217,7 @@ private:
 
 public:
 	AVL() : root(nullptr) { }
+	AVL(Node<Key, Value>* root) : root(root) { }
 
 	void insert(const Key& key, const Value& value) {
 		Node<Key, Value>* node = new Node<Key, Value>(key, value, 1);
@@ -227,7 +228,11 @@ public:
 		root = _delete(root, key);
 	}
 
-	friend Node<Key, Value>* join(AVL<Key, Value> lhs, AVL<Key, Value> rhs) {
+	static Node<Key, Value>* join(AVL<Key, Value> lhs, AVL<Key, Value> rhs) {
+		if (lhs.root == nullptr)
+			return rhs.root;
+		else if (rhs.root == nullptr)
+			return lhs.root;
 		// Make Sure Tree in lhs has every key less than smallest key in rhs
 		auto minlhs = lhs.root;
 		auto maxlhs = lhs.root;
@@ -273,17 +278,18 @@ public:
 				return root;
 			}
 		};
-		
+
 		auto lhs_height = lhs.root->height, rhs_height = rhs.root->height;
 		if (abs(lhs_height - rhs_height) <= 1) {		// Case 1
 			Node<Key, Value>* new_root = new Node<Key, Value>(minrhs->key, minrhs->value, 1);	// TODO: set valid height
 			rhs.erase(minrhs->key);
 			new_root->left = lhs.root;
 			new_root->right = rhs.root;
+			new_root = rebalance(new_root);
 			new_root->height = 1 + max(getHeight(new_root->left), getHeight(new_root->right));
 			return new_root;
 		}
-		else if(lhs_height <= rhs_height - 2) {		// Case 2 And 3 Because we are sure height of left tree is smaller
+		else if (lhs_height <= rhs_height - 2) {		// Case 2 And 3 Because we are sure height of left tree is smaller
 			Node<Key, Value>* new_root = new Node<Key, Value>(minrhs->key, minrhs->value, 1);	// TODO: set valid height
 			rhs.erase(minrhs->key);
 
@@ -309,9 +315,12 @@ public:
 				new_root->right = ptr;
 				while (!stck.empty()) {
 					stck.top() = rebalance(stck.top());
-					if (stck.size() == 1)
-						rhs.root = stck.top();
+					Node<Key, Value>* curr = stck.top();
 					stck.pop();
+					if (stck.size() == 0)
+						rhs.root = curr;
+					else
+						stck.top()->left = curr;
 				}
 			}
 			else if (getHeight(ptr) == lhs_height - 1 && stck.top()->height == lhs_height + 1) {
@@ -321,9 +330,12 @@ public:
 				new_root->right = ptr;
 				while (!stck.empty()) {
 					stck.top() = rebalance(stck.top());
-					if (stck.size() == 1)
-						rhs.root = stck.top();
+					Node<Key, Value>* curr = stck.top();
 					stck.pop();
+					if (stck.size() == 0)
+						rhs.root = curr;
+					else
+						stck.top()->left = curr;
 				}
 			}
 			else {
@@ -357,9 +369,12 @@ public:
 				// Root change thai che!!
 				while (!stck.empty()) {
 					stck.top() = rebalance(stck.top());
-					if (stck.size() == 1)
-						lhs.root = stck.top();
+					Node<Key, Value>* curr = stck.top();
 					stck.pop();
+					if (stck.size() == 0)
+						lhs.root = curr;
+					else
+						stck.top()->right = curr;
 				}
 			}
 			else if (getHeight(ptr) == rhs_height - 1 && stck.top()->height == rhs_height + 1) {
@@ -369,9 +384,12 @@ public:
 				new_root->right = rhs.root;
 				while (!stck.empty()) {
 					stck.top() = rebalance(stck.top());
-					if (stck.size() == 1)
-						lhs.root = stck.top();
+					Node<Key, Value>* curr = stck.top();
 					stck.pop();
+					if (stck.size() == 0)
+						lhs.root = curr;
+					else
+						stck.top()->right = curr;
 				}
 			}
 			else {
@@ -382,6 +400,68 @@ public:
 		else {
 			assert(false);
 		}
+		return nullptr;
+	}
+
+	static void _split(Node<Key, Value>* root, const Key& splitKey, deque<Node<Key, Value>*>& left_tree_list, deque<Node<Key, Value>*>& right_tree_list) {
+		if (!root)
+			return;
+		if (root->key == splitKey) {
+			right_tree_list.push_front(root->right);
+			left_tree_list.push_back(root->left);
+
+			root->left = root->right = nullptr;
+			root->height = 1;
+			right_tree_list.push_front(root);
+
+			return;
+		}
+		else if (root->key < splitKey) {		// Goto Right Subtree
+			Node<Key, Value>* right_child = root->right;
+			left_tree_list.push_back(root->left);
+			root->left = root->right = nullptr;
+			root->height = 1;
+			left_tree_list.push_back(root);
+
+			_split(right_child, splitKey, left_tree_list, right_tree_list);
+			return;
+		}
+		else {									// Goto Left Subtree
+			Node<Key, Value>* left_child = root->left;
+			right_tree_list.push_front(root->right);
+			root->left = root->right = nullptr;
+			root->height = 1;
+			right_tree_list.push_front(root);
+
+			_split(left_child, splitKey, left_tree_list, right_tree_list);
+			return;
+		}
+	}
+
+	static pair<AVL<Key, Value>, AVL<Key, Value>> split(AVL<Key, Value> lhs, const Key& splitKey) {
+		deque<Node<Key, Value>*> left_tree_list, right_tree_list;
+		_split(lhs.root, splitKey, left_tree_list, right_tree_list);
+
+		// Removing All Null Node Pointers
+		auto it1 = remove_if(left_tree_list.begin(), left_tree_list.end(), [](auto ele) { return ele == nullptr; });
+		if(it1 != left_tree_list.end())
+			left_tree_list.erase(it1);
+		auto it2 = remove_if(right_tree_list.begin(), right_tree_list.end(), [](auto ele) { return ele == nullptr; });
+		if(it2 != right_tree_list.end())
+			right_tree_list.erase(it2);
+
+		AVL<Key, Value> left_tree = nullptr;
+		for (auto tree : left_tree_list) {
+			AVL<Key, Value> tmp(tree);
+			left_tree.root = join(left_tree, tmp);
+		}
+		AVL<Key, Value> right_tree = nullptr;
+		for (auto tree : right_tree_list) {
+			AVL<Key, Value> tmp(tree);
+			right_tree.root = join(right_tree, tmp);
+		}
+
+		return make_pair(left_tree, right_tree);
 	}
 
 	friend ostream& operator<<(ostream& out, const AVL<Key, Value>& avl) {
