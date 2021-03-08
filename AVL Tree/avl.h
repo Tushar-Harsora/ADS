@@ -1,8 +1,10 @@
 #pragma once
 
 #include <algorithm>
+#include <stack>
 #include <iostream>
 #include <cstdint>
+#include <cassert>
 using namespace std;
 
 template<typename Key, typename Value>
@@ -24,7 +26,7 @@ public:
 		// Or Instead You Can Prematurely Check if left or right child exists
 		// if yes then call operator<< recursively
 		out << node->left;
-		out << node->key << " : " << node->value;
+		out << node->key << " : " << node->value << " Height : " << node->height;
 		out << node->right;
 
 		return out;
@@ -39,15 +41,14 @@ public:
 
 template<typename Key, typename Value>
 struct AVL {
-private:
+public:
 	Node<Key, Value>* root;
-
-
+private:
 	static int64_t getHeight(Node<Key, Value>* node) {
 		return node == nullptr ? 0 : node->height;
 	}
 
-	Node<Key, Value>* _right_rotate(Node<Key, Value>* x) {
+	static Node<Key, Value>* _right_rotate(Node<Key, Value>* x) {
 		/*
 						 x                                   y
 						/ \                                 / \
@@ -70,7 +71,7 @@ private:
 		return y;
 	}
 
-	Node<Key, Value>* _left_rotate(Node<Key, Value>* x) {
+	static Node<Key, Value>* _left_rotate(Node<Key, Value>* x) {
 		/*
 						 x                                    y
 						/ \                                  / \
@@ -149,8 +150,8 @@ private:
 			root->right = _delete(root->right, key);
 		}
 		else {		// Delete This
-			auto exactly_one_child = (root->left == nullptr || root->right == nullptr) && 
-									 !(root->left == nullptr && root->right == nullptr);	// A exor B
+			auto exactly_one_child = (root->left == nullptr || root->right == nullptr) &&
+				!(root->left == nullptr && root->right == nullptr);	// A exor B
 
 			if (exactly_one_child) {
 				auto child_node = root->left ? root->left : root->right;
@@ -190,7 +191,8 @@ private:
 			auto left_balance = get_balance(root->left);
 			if (left_balance >= 0) {
 				return _right_rotate(root);
-			}else{
+			}
+			else {
 				root->left = _left_rotate(root->left);
 				return _right_rotate(root);
 			}
@@ -209,7 +211,7 @@ private:
 		return root;
 	}
 
-	auto get_balance(Node<Key, Value>* root) {
+	static auto get_balance(Node<Key, Value>* root) {
 		return getHeight(root->left) - getHeight(root->right);
 	}
 
@@ -223,6 +225,163 @@ public:
 
 	void erase(const Key& key) {
 		root = _delete(root, key);
+	}
+
+	friend Node<Key, Value>* join(AVL<Key, Value> lhs, AVL<Key, Value> rhs) {
+		// Make Sure Tree in lhs has every key less than smallest key in rhs
+		auto minlhs = lhs.root;
+		auto maxlhs = lhs.root;
+		auto minrhs = rhs.root;
+		auto maxrhs = rhs.root;
+		while (minlhs->left)	minlhs = minlhs->left;
+		while (maxlhs->right)	maxlhs = maxlhs->right;
+		while (minrhs->left)	minrhs = minrhs->left;
+		while (maxrhs->right)	maxrhs = maxrhs->right;
+#ifdef _DEBUG
+		assert(maxlhs->key < minrhs->key);
+		if (lhs.root == rhs.root)
+			assert(false);
+#endif // _DEBUG
+		auto rebalance = [](Node<Key, Value>* root) -> Node<Key, Value>*{
+			auto leftHeight = getHeight(root->left);
+			auto rightHeight = getHeight(root->right);
+			root->height = max(leftHeight, rightHeight) + 1;
+
+			auto balance = get_balance(root);
+
+			if (balance > 1) {
+				auto left_balance = get_balance(root->left);
+				if (left_balance >= 0) {
+					return _right_rotate(root);
+				}
+				else {
+					root->left = _left_rotate(root->left);
+					return _right_rotate(root);
+				}
+			}
+			else if (balance < -1) {
+				auto right_balance = get_balance(root->right);
+				if (right_balance <= 0) {
+					return _left_rotate(root);
+				}
+				else {
+					root->right = _right_rotate(root->right);
+					return _left_rotate(root);
+				}
+			}
+			else {
+				return root;
+			}
+		};
+		
+		auto lhs_height = lhs.root->height, rhs_height = rhs.root->height;
+		if (abs(lhs_height - rhs_height) <= 1) {		// Case 1
+			Node<Key, Value>* new_root = new Node<Key, Value>(minrhs->key, minrhs->value, 1);	// TODO: set valid height
+			rhs.erase(minrhs->key);
+			new_root->left = lhs.root;
+			new_root->right = rhs.root;
+			new_root->height = 1 + max(getHeight(new_root->left), getHeight(new_root->right));
+			return new_root;
+		}
+		else if(lhs_height <= rhs_height - 2) {		// Case 2 And 3 Because we are sure height of left tree is smaller
+			Node<Key, Value>* new_root = new Node<Key, Value>(minrhs->key, minrhs->value, 1);	// TODO: set valid height
+			rhs.erase(minrhs->key);
+
+			lhs_height = getHeight(lhs.root), rhs_height = getHeight(rhs.root);
+			Node<Key, Value>* ptr = rhs.root;
+			stack<Node<Key, Value>*> stck;
+			while (getHeight(ptr) > lhs_height) {
+				stck.push(ptr);
+				ptr = ptr->left;
+			}
+
+			//TODO: Stack will not always have top element
+			if (getHeight(ptr) == lhs_height && stck.top()->height == lhs_height + 2) {		// Case 2.1 OR 3.1
+				new_root->height = lhs_height + 1;
+				stck.top()->left = new_root;
+				new_root->left = lhs.root;
+				new_root->right = ptr;
+			}
+			else if (getHeight(ptr) == lhs_height && stck.top()->height == lhs_height + 1) {
+				new_root->height = lhs_height + 1;
+				stck.top()->left = new_root;
+				new_root->left = lhs.root;
+				new_root->right = ptr;
+				while (!stck.empty()) {
+					stck.top() = rebalance(stck.top());
+					if (stck.size() == 1)
+						rhs.root = stck.top();
+					stck.pop();
+				}
+			}
+			else if (getHeight(ptr) == lhs_height - 1 && stck.top()->height == lhs_height + 1) {
+				new_root->height = lhs_height + 1;
+				stck.top()->left = new_root;
+				new_root->left = lhs.root;
+				new_root->right = ptr;
+				while (!stck.empty()) {
+					stck.top() = rebalance(stck.top());
+					if (stck.size() == 1)
+						rhs.root = stck.top();
+					stck.pop();
+				}
+			}
+			else {
+				assert(false);
+			}
+			return rhs.root;
+		}
+		else if (rhs_height <= lhs_height - 2) {
+			Node<Key, Value>* new_root = new Node<Key, Value>(minrhs->key, minrhs->value, 1);
+			rhs.erase(minrhs->key);
+
+			lhs_height = getHeight(lhs.root), rhs_height = getHeight(rhs.root);
+			Node<Key, Value>* ptr = lhs.root;
+			stack<Node<Key, Value>*> stck;
+			while (getHeight(ptr) > rhs_height) {
+				stck.push(ptr);
+				ptr = ptr->right;
+			}
+
+			if (getHeight(ptr) == rhs_height && stck.top()->height == rhs_height + 2) {
+				new_root->height = rhs_height + 1;
+				stck.top()->right = new_root;
+				new_root->left = ptr;
+				new_root->right = rhs.root;
+			}
+			else if (getHeight(ptr) == rhs_height && stck.top()->height == rhs_height + 1) {
+				new_root->height = rhs_height + 1;
+				stck.top()->right = new_root;
+				new_root->left = ptr;
+				new_root->right = rhs.root;
+				// Root change thai che!!
+				while (!stck.empty()) {
+					stck.top() = rebalance(stck.top());
+					if (stck.size() == 1)
+						lhs.root = stck.top();
+					stck.pop();
+				}
+			}
+			else if (getHeight(ptr) == rhs_height - 1 && stck.top()->height == rhs_height + 1) {
+				new_root->height = rhs_height + 1;
+				stck.top()->right = new_root;
+				new_root->left = ptr;
+				new_root->right = rhs.root;
+				while (!stck.empty()) {
+					stck.top() = rebalance(stck.top());
+					if (stck.size() == 1)
+						lhs.root = stck.top();
+					stck.pop();
+				}
+			}
+			else {
+				assert(false);
+			}
+			return lhs.root;
+		}
+		else {
+			assert(false);
+		}
 	}
 
 	friend ostream& operator<<(ostream& out, const AVL<Key, Value>& avl) {
