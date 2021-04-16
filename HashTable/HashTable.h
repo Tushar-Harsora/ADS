@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <cassert>
 
 template<typename T>
 struct Node {
@@ -18,6 +19,36 @@ private:
 	uint16_t num_elems;
 	constexpr static long double max_load_factor = 2.0;
 	Hasher m_hash{};
+
+	void resize_and_rehash() {
+		std::vector<Node<T>*> new_buckets;
+		new_buckets.resize(2 * buckets.size());
+
+		// insert every items from buckets to new_buckets
+		for (size_t i = 0; i < buckets.size(); i++) {
+			auto ptr = buckets[i];
+			while (ptr) {
+				const T& key = ptr->value;
+				auto hash = m_hash(key) % new_buckets.size();
+				Node<T>* curr = ptr;
+				ptr = ptr->next;
+				curr->next = nullptr;
+
+				if (new_buckets[hash]) {
+					auto first = new_buckets[hash];
+					while (first->next)
+						first = first->next;
+					first->next = curr;		// No need to construct new node
+				}
+				else {
+					new_buckets[hash] = curr;
+				}
+			}
+		}
+
+		buckets = std::move(new_buckets);
+		return;
+	}
 public:
 	HashTable() : num_elems(0) {
 		buckets.resize(5);
@@ -43,9 +74,40 @@ public:
 		num_elems++;
 
 		if (load_factor() >= max_load_factor) {
-			buckets.resize(2 * buckets.size());
+			resize_and_rehash();
 		}
- 	}
+	}
+
+	void erase(const T& key) {
+		uint64_t hash = m_hash(key) % buckets.size();
+		Node<T>* prev = buckets[hash];
+
+		// if we find element with specified with key then delete else do nothing
+		if (prev) {
+			auto target = buckets[hash]->next;
+			if (prev->value == key) {
+				buckets[hash] = prev->next;
+				delete prev;
+				return;
+			}
+			if (target && target->value == key) {
+				prev->next = target->next;
+				delete target;
+				return;
+			}
+			while (target && target->value != key) {
+				prev = target;
+				target = target->next;
+			}
+			if (target == nullptr) {		// we didn't find key
+				return;
+			}
+			assert(target->value == key);
+			Node<T>* temp = target;
+			prev->next = target->next;
+			delete temp;
+		}
+	}
 
 	long double load_factor() const {
 		return static_cast<long double>(num_elems) / buckets.size();

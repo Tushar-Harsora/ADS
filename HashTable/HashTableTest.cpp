@@ -12,8 +12,10 @@ struct Hasher {
 };
 int main() {
 	HashTable<int, Hasher> s;
-	for (int i = 0; i < 12; i++) {
+	for (int i = 0; i < 10; i++)
 		s.insert(i);
-	}
+	for (int i = 5; i < 10; i++)
+		s.erase(i);
+	s.erase(1337);
 	return 0;
 }
