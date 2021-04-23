@@ -11,7 +11,6 @@ struct min_fun {
 };
 
 int main() {
-	cout << log2(1) << endl;
 	int n;
 	cin >> n;
 	vector<int> arr(n);
