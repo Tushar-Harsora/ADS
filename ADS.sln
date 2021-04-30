@@ -23,6 +23,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HashTable", "HashTable\Hash
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SuffixArray", "SuffixArray\SuffixArray.vcxproj", "{BF0ECB8F-664A-4564-86E2-6FEE8CB0CC3C}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Disjoint Set Union", "Disjoint Set Union\Disjoint Set Union.vcxproj", "{41A2BF3C-43E6-4F8C-AF96-5421F35C39D0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -111,6 +113,14 @@ Global
 		{BF0ECB8F-664A-4564-86E2-6FEE8CB0CC3C}.Release|x64.Build.0 = Release|x64
 		{BF0ECB8F-664A-4564-86E2-6FEE8CB0CC3C}.Release|x86.ActiveCfg = Release|Win32
 		{BF0ECB8F-664A-4564-86E2-6FEE8CB0CC3C}.Release|x86.Build.0 = Release|Win32
+		{41A2BF3C-43E6-4F8C-AF96-5421F35C39D0}.Debug|x64.ActiveCfg = Debug|x64
+		{41A2BF3C-43E6-4F8C-AF96-5421F35C39D0}.Debug|x64.Build.0 = Debug|x64
+		{41A2BF3C-43E6-4F8C-AF96-5421F35C39D0}.Debug|x86.ActiveCfg = Debug|Win32
+		{41A2BF3C-43E6-4F8C-AF96-5421F35C39D0}.Debug|x86.Build.0 = Debug|Win32
+		{41A2BF3C-43E6-4F8C-AF96-5421F35C39D0}.Release|x64.ActiveCfg = Release|x64
+		{41A2BF3C-43E6-4F8C-AF96-5421F35C39D0}.Release|x64.Build.0 = Release|x64
+		{41A2BF3C-43E6-4F8C-AF96-5421F35C39D0}.Release|x86.ActiveCfg = Release|Win32
+		{41A2BF3C-43E6-4F8C-AF96-5421F35C39D0}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

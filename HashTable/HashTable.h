@@ -1,7 +1,10 @@
 #pragma once
 
+#include <iostream>
 #include <vector>
 #include <cassert>
+
+using namespace std;
 
 template<typename T>
 struct Node {
@@ -111,5 +114,17 @@ public:
 
 	long double load_factor() const {
 		return static_cast<long double>(num_elems) / buckets.size();
+	}
+
+	friend ostream& operator<<(ostream& out, HashTable<T, Hasher>& tab) {
+		for (Node<T>* bucket : tab.buckets) {
+			if (!bucket)
+				continue;
+			while (bucket) {
+				out << bucket->value << " ";
+				bucket = bucket->next;
+			}
+		}
+		return out;
 	}
 };
