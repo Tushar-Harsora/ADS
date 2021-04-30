@@ -96,8 +96,8 @@ int main() {
 	string s = "banana";
 	auto suffix_array = build_suffix_array(s);
 
-	assert(get_occurences(suffix_array, "an") == 2);
-	assert(get_occurences(suffix_array, "na") == 2);
-	assert(get_occurences(suffix_array, "ban") == 1);
+	cout << "The \"an\" occurs " << get_occurences(suffix_array, "an") << " times in banana" << endl;
+	cout << "The \"na\" occurs " << get_occurences(suffix_array, "na") << " times in banana" << endl;
+	cout << "The \"ban\" occurs " << get_occurences(suffix_array, "ban") << " times in banana" << endl;
 	return 0;
 }
